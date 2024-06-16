@@ -1,0 +1,1053 @@
+// task 394
+
+#include <iostream>
+// #include <fstream>
+#include <vector>
+using namespace std;
+
+
+int k;
+
+bool is_solution(int lzero[], int czero[]) {
+    for (int i = 0; i < k; i++) {
+        if (lzero[i] == 0 || czero[i] == 0) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+int find_min_sum(vector<vector<int>> m, vector<vector<int>> mtrx, vector<bool> & used, int step=0) {
+    if (step == k)
+        return 0;
+
+    int curr_sum, min_sum = __INT_MAX__ >> 1;
+    // bool has_ans = false;
+    // vector<bool> used(k, false);
+    for (int j = 0; j < k; j++) {
+        if (m[step][j] == 0 && !used[j]) {
+            used[j] = true;
+            curr_sum = mtrx[step][j] + find_min_sum(m, mtrx, used, step + 1);
+            // has_ans = true;
+            // cout << mtrx[i][j] << " ";
+            // cout << "cs " << curr_sum << endl;
+            if (curr_sum < min_sum)
+                min_sum = curr_sum;
+
+            used[j] = false;
+        }
+    }
+
+    // cout << endl;
+
+    // cout << "ms " << min_sum << endl;
+
+    return curr_sum;
+}
+
+int main() {
+    // ifstream fin("input.txt");
+    // ofstream fout("output.txt");
+
+    cin >> k;
+
+    vector<vector<int>> matrix(k, vector<int>(k, 0)), mtrx(k, vector<int>(k, 0));
+    int minl[k] = {__INT_MAX__}, minc[k] = {__INT_MAX__};
+    for (int i = 0; i < k; i++) {
+        minl[i] = __INT_MAX__;
+        for (int j = 0; j < k; j++) {
+            cin >> matrix[i][j];
+            mtrx[i][j] = matrix[i][j];
+            minl[i] = matrix[i][j] < minl[i] ? matrix[i][j] : minl[i];
+            minc[j] = __INT_MAX__;
+        }
+    }
+
+    int lzeros[k] = {0}, czeros[k] = {0};
+    for (int i = 0; i < k; i++) {
+        for (int j = 0; j < k; j++) {
+            matrix[i][j] -= minl[i];
+            if (matrix[i][j] == 0) {
+                lzeros[i]++;
+                czeros[j]++;
+            }
+
+            minc[j] = matrix[i][j] < minc[j] ? matrix[i][j] : minc[j];
+        }
+    }
+
+    // cout << "-----" << endl;
+    // for (int i = 0; i < k; i++) {
+    //     for (int j = 0; j < k; j++) {
+    //         cout << matrix[i][j] << " ";
+    //     }
+
+    //     cout << endl;
+    // }
+
+    if (is_solution(lzeros, czeros)) {
+        vector<bool> used(k, false);
+        int ans = find_min_sum(matrix, mtrx, used);
+        // cout << ans << endl;
+        cout << ans;
+    }
+    else {
+        for (int i = 0; i < k; i++) {
+            for (int j = 0; j < k; j++) {
+                matrix[i][j] -= minc[j];
+                if (matrix[i][j] == 0 && minc[j] != 0) {
+                    lzeros[i]++;
+                    czeros[j]++;
+                }
+            }
+        }
+
+        bool lcrossed[k] = {false}, ccrossed[k] = {false};
+        for (int i = 0; i < k; i++) {
+            if (lzeros[i] > 1) {
+                lcrossed[i] = true;
+            }
+
+            // czeros[i] = 0;
+        }
+
+        for (int i = 0; i < k; i++) {
+            if (!lcrossed[i]) {
+                for (int j = 0; j < k; j++) {
+                    if (matrix[i][j] == 0) {
+                        ccrossed[j] = true;
+                    }
+                }
+            }
+        }
+
+        // cout << "-----" << endl;
+        // for (int i = 0; i < k; i++) {
+        //     for (int j = 0; j < k; j++) {
+        //         cout << matrix[i][j] << " ";
+        //     }
+
+        //     cout << endl;
+        // }
+
+        if (is_solution(lzeros, czeros)) {
+            vector<bool> used(k, false);
+            int ans = find_min_sum(matrix, mtrx, used);
+            // cout << " = " << ans << endl;
+            cout << ans;
+        }
+        else {
+            int sup_min = __INT_MAX__;
+            for (int i = 0; i < k; i++) {
+                if (!lcrossed[i]) {
+                    for (int j = 0; j < k; j++) {
+                        if (!ccrossed[j]) {
+                            sup_min = matrix[i][j] < sup_min ? matrix[i][j] : sup_min;
+                        }
+                    }
+                }
+            }
+
+            for (int i = 0; i < k; i++) {
+                if (!lcrossed[i]) {
+                    for (int j = 0; j < k; j++) {
+                        if (!ccrossed[j]) {
+                            matrix[i][j] -= sup_min;
+                        }
+                    }
+                }
+            }
+
+            // vector<bool> used(k, false);
+
+            // cout << "-----" << endl;
+            // for (int i = 0; i < k; i++) {
+            //     for (int j = 0; j < k; j++) {
+            //         cout << matrix[i][j] << " ";
+            //     }
+
+            //     cout << endl;
+            // }
+
+            vector<bool> used(k, false);
+            int ans = find_min_sum(matrix, mtrx, used);
+            // cout << " : " << ans << endl;
+            cout << ans;
+        }
+    }
+
+    // fin.close();
+    // fout.close();
+
+    return 0;
+}
+
+// taks164_dfs
+
+#include <iostream>
+#include <vector>
+using namespace std;
+
+
+void dfs(int n, vector<vector<bool>> graph, vector<bool> &visited, int vertex) {
+    visited[vertex] = true;
+    for (int i = 0; i < n; i++) {
+        if (graph[vertex][i] && !visited[i]) {
+            dfs(n, graph, visited, i);
+        }
+    }
+}
+
+int main() {
+    int n, s, k = 0;
+    cin >> n >> s;
+
+    vector<vector<bool>> graph(n, vector<bool>(n, 0));
+    bool tmp;
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < n; j++) {
+            cin >> tmp;
+            graph[i][j] = tmp;
+        }
+    }
+
+    vector<bool> visited(n);
+    dfs(n, graph, visited, s - 1);
+    for (int i = 0; i < n; i++)
+        if (visited[i]) 
+            k++;
+        
+    cout << k;
+    
+    return 0;
+}
+
+
+// task161_bfs
+
+#include <iostream>
+#include <queue>
+using namespace std;
+
+
+void reversed_bfs(int x1, int y1, int x2, int y2, vector<vector<int>> dist, vector<int> &ans) {
+    int dx[8] = {-2, -1, 1, 2, -2, -1, 1, 2};
+    int dy[8] = {-1, -2, -2, -1, 1, 2, 2, 1};
+
+    ans.push_back(x1);
+    ans.push_back(y1);
+    int k = dist[x1][y1] - 1;
+    int xt = x1, yt = y1;
+    while (k > 0) {
+        for (int i = 0; i < 8; i++) {
+            int xn = xt + dx[i], yn = yt + dy[i];
+            if (0 <= xn && xn < dist.size() && 0 <= yn && yn < dist.size() && dist[xn][yn] == k) {
+                ans.push_back(xn);
+                ans.push_back(yn);
+                xt = xn, yt = yn;
+                k--;
+                break;
+            }
+        }
+    }
+}
+
+void bfs(int x1, int y1, int x2, int y2, int size) {
+    queue<vector<int>> q;
+    vector<vector<int>> dist(size, vector<int>(size, __INT_MAX__));
+    int dx[8] = {-2, -1, 1, 2, -2, -1, 1, 2};
+    int dy[8] = {-1, -2, -2, -1, 1, 2, 2, 1};
+
+    q.push({x1, y1});
+    dist[x1][y1] = 0;
+    while (!q.empty()) {
+        int xq = q.front()[0], yq = q.front()[1];
+        q.pop();
+        for (int k = 0; k < 8; k++) {
+            int u = xq + dx[k], v = yq + dy[k];
+            if (0 <= u && u < size && 0 <= v && v < size && dist[u][v] > dist[xq][yq] + 1) {
+                dist[u][v] = dist[xq][yq] + 1;
+                q.push({u, v});  
+            }
+        }
+    }
+
+    cout << dist[x2][y2] << endl;
+
+    vector<int> ans(dist[x2][y2] * 2);
+    reversed_bfs(x2, y2, x1, y1, dist, ans);
+
+    cout << x1 + 1 << " " << y1 + 1 << endl;
+    for (int i = ans.size() - 1; i > 0; i -= 2) {
+        cout << ans[i - 1] + 1 << " " << ans[i] + 1 << endl;
+        if (ans[i - 1] == x2 && ans[i] == y2)
+            break;
+    }
+}
+
+int main() {
+    int n, x1, y1, x2, y2;
+    cin >> n >> x1 >> y1 >> x2 >> y2;
+
+    bfs(x1 - 1, y1 - 1, x2 - 1, y2 - 1, n);
+    
+    return 0;
+}
+
+
+// двудольность
+#include <iostream>
+#include <vector>
+using namespace std;
+
+
+bool is_bipartite = true;
+
+void dfs(vector<vector<bool>> graph, vector<int> &colored, int vertex, int n) {
+    for (int i = 0; i < n; i++) {
+        if (graph[vertex][i] && colored[i] == 0) {
+            colored[i] = colored[vertex] == 1 ? 2 : 1;
+            if (is_bipartite)
+                dfs(graph, colored, i, n);
+            else
+                return;
+        }
+        else if (is_bipartite && graph[vertex][i] && colored[i] != 0 && colored[i] == colored[vertex]) {
+            // cout << "colormap: ";
+            // for (int j = 0; j < n; j++)
+            //     cout << colored[j] << " ";
+            
+            cout << "NO";
+            is_bipartite = false;
+            return;
+        }
+    }
+}
+
+int main() {
+    int n;
+    cin >> n;
+
+    vector<vector<bool>> graph(n, vector<bool>(n, false));
+    bool tmp;
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < n; j++) {
+            cin >> tmp;
+            graph[i][j] = tmp;
+        }
+    }
+
+    vector<int> colored(n);
+    colored[0] = 1;
+    dfs(graph, colored, 0, n);
+    // for (int i = 0; i < n; i++)
+    //     if (visited[i]) 
+    //         k++;
+        
+    // cout << k;
+    if (is_bipartite)
+        cout << "YES";
+    
+    /*
+    0 0 0 0 1 1 0 0
+    0 0 0 0 1 0 1 0
+    0 0 0 1 0 1 0 1
+    0 0 1 0 0 0 0 0
+    1 1 0 0 0 0 0 0
+    1 0 1 0 0 0 0 0
+    0 1 0 0 0 0 0 0
+    0 0 1 0 0 0 0 0
+
+    0 1 1 0 0
+    1 0 0 1 0
+    1 0 0 1 0
+    0 1 1 0 1
+    0 0 0 1 0
+
+    0 1 0 0 1 1 0 0
+    1 0 0 0 1 0 1 0
+    0 0 0 1 0 1 0 1
+    0 0 1 0 0 0 0 0
+    1 1 0 0 0 0 1 0
+    1 0 1 0 0 0 0 0
+    0 1 0 0 1 0 0 0
+    0 0 1 0 0 0 0 0
+    */
+
+    return 0;
+}
+
+
+// steiner for 3 points
+
+#include <iostream>
+#define _USE_MATH_DEFINES
+#include <cmath>
+#include <graphics.h>
+using namespace std;
+
+
+class Point {
+    public:
+        float x;
+        float y;
+        Point(float xi = 0.0, float yi = 0.0) {
+            this->x = xi;
+            this->y = yi;
+        }
+
+        float len() {
+            return sqrt(this->x * this->x + this->y * this->y);
+        }
+
+        Point operator+(Point p2) {
+            return Point(this->x + p2.x, this->y + p2.y);
+        }
+
+        Point operator-(Point p2) {
+            return Point(this->x - p2.x, this->y - p2.y);
+        }
+
+        Point operator*(float v) {
+            return Point(this->x * v, this->y * v);
+        }
+
+        float operator*(Point p2) {
+            return (this->x * p2.x + this->y * p2.y) / (this->len() * p2.len());
+        }
+};
+
+int X0 = 400, Y0 = 300;
+float scale = 40;
+float lims[4];
+
+int xcoord(float x) {
+    return int(X0 + scale * x);
+}
+
+int ycoord(float y) {
+    return int(Y0 - scale * y);
+}
+
+void axes(float dv) {
+    line(0, Y0, X0 * 2 - 1, Y0);
+    line(X0, 0, X0, 799);
+
+    line(X0, 0, xcoord(dv / 2), scale * dv);
+    line(X0, 0, xcoord(-dv / 2), scale * dv);
+    line(X0 * 2 - 1, Y0, X0 * 2 - scale * dv, ycoord(dv / 2));
+    line(X0 * 2 - 1, Y0, X0 * 2 - scale *  dv, ycoord(-dv / 2));
+    
+    char s[10];
+    int least_intx = floor(lims[0]);
+    int least_inty = floor(lims[2]);
+    for (int i = least_intx; i <= lims[1]; i++) {
+        line(xcoord(i), ycoord(-dv / 2), xcoord(i), ycoord(dv / 2));
+
+        if (i != 0){
+            sprintf(s, "%d", i);
+            outtextxy(xcoord(i) - 4, ycoord(-dv) + 3, s);
+        }
+
+        for (float j = i + dv; j < i + 1 && j < lims[1]; j += dv) {
+            line(xcoord(j), ycoord(-dv / 4), xcoord(j), ycoord(dv / 4));
+        }
+    }
+
+    for (int i = least_inty; i <= lims[3]; i++) {
+        line(xcoord(-dv / 2), ycoord(i), xcoord(dv / 2), ycoord(i));
+
+        if (i != 0){
+            sprintf(s, "%d", i);
+            outtextxy(xcoord(dv) + 4, ycoord(i) - 5, s);
+        }
+
+        for (float j = i + dv; j < i + 1 && j < lims[3]; j += dv) {
+            line(xcoord(-dv / 4), ycoord(j), xcoord(dv / 4), ycoord(j));
+        }
+    }
+}
+
+void print_point(float x, float y, int dx, int dy) {
+    char text[20];
+    sprintf(text, "x=%.3f", x);
+    outtextxy(xcoord(x) + dx, ycoord(y) + dy - 15, text);
+    sprintf(text, "y=%.3f", y);
+    outtextxy(xcoord(x) + dx, ycoord(y) + dy, text);
+}
+
+int main() {
+    Point stnpt, p[3];
+    for (int i = 0; i < 3; i++) {
+        cin >> p[i].x >> p[i].y;
+    }
+
+    // Проверка углов между вершинами
+    float angle[3];
+    Point v[3] = {p[1] - p[2], p[2] - p[0], p[0] - p[1]};
+    angle[0] = acos(((v[1].x * v[1].x + v[1].y * v[1].y) + (v[2].x * v[2].x + v[2].y * v[2].y)
+                 - (v[0].x * v[0].x + v[0].y * v[0].y)) / (2 * v[1].len() * v[2].len()));
+    angle[2] = acos(((v[1].x * v[1].x + v[1].y * v[1].y) + (v[0].x * v[0].x + v[0].y * v[0].y)
+                 - (v[2].x * v[2].x + v[2].y * v[2].y)) / (2 * v[0].len() * v[1].len()));
+    angle[1] = M_PI - angle[0] - angle[2];
+
+    bool found = false;
+    for (int i = 0; i < 3; i++) {
+        if (angle[i] > 2 * M_PI / 3) {
+            cout << p[i].x << " " << p[i].y;
+            stnpt.x = p[i].x, stnpt.y = p[i].y;
+            found = true;
+
+            // Вывод всего этого на координатные оси
+            float xmax = p[0].x > p[1].x ? p[0].x : p[1].x;
+            xmax = p[2].x > xmax ? p[2].x : xmax;
+            float xmin = p[0].x < p[1].x ? p[0].x : p[1].x;
+            xmin = p[2].x < xmin ? p[2].x : xmin;
+            float ymax = p[0].y > p[1].y ? p[0].y : p[1].y;
+            ymax = p[2].y > ymax ? p[2].y : ymax;
+            float ymin = p[0].y < p[1].y ? p[0].y : p[1].y;
+            ymin = p[2].y < ymin ? p[2].y : ymin;
+            lims[0] = xmin - 5, lims[1] = xmax + 5,
+            lims[2] = ymin - 5, lims[3] = ymax + 5;
+
+            scale = max((lims[1] - lims[0]), (lims[3] - lims[2])) / 1.25;
+            cout << "\nScale = " << scale;
+
+            // -lbgi -lgdi32 -lcomdlg32 -luuid -loleaut32 -lole32
+            initwindow(X0 * 2, Y0 * 2);
+            axes(1/3.);
+            
+            setcolor(LIGHTBLUE);
+            line(xcoord(p[i].x), ycoord(p[i].y), xcoord(p[(i + 1) % 3].x), ycoord(p[(i + 1) % 3].y));
+            line(xcoord(p[i].x), ycoord(p[i].y), xcoord(p[(i + 2) % 3].x), ycoord(p[(i + 2) % 3].y));
+
+            setcolor(GREEN);
+            fillellipse(xcoord(stnpt.x), ycoord(stnpt.y), 7, 7);
+            setcolor(WHITE);
+            print_point(stnpt.x, stnpt.y, 15, -10);
+            
+            fillellipse(xcoord(p[(i + 1) % 3].x), ycoord(p[(i + 1) % 3].y), 4, 4);
+            fillellipse(xcoord(p[(i + 2) % 3].x), ycoord(p[(i + 2) % 3].y), 4, 4);
+
+            getch();
+            closegraph();
+
+            break;
+        }
+    }
+
+    if (not found) {
+        // Выбираем вершины ребра напротив наибольшего угла
+        int ai = angle[0] > angle[1] ? 0 : 1;
+        ai = angle[ai] > angle[2] ? ai : 2;
+        int bi = (ai + 1) % 3, ci = (bi + 1) % 3;
+
+        // Определяем, с какой стороны строить правильный треугольник
+        int tr_side = (v[ai].x * v[ci].y - v[ai].y * v[ci].x > 0) ? 1 : -1,
+            k = 60 * tr_side;
+        
+        // Поворячиваем большую сторону на 60 градусов
+        // и находим точку для построения правильного треугольника
+        Point d(v[ai].x * cos(k * M_PI / 180) - v[ai].y * sin(k * M_PI / 180), 
+                v[ai].x * sin(k * M_PI / 180) + v[ai].y * cos(k * M_PI / 180));
+        Point dpt = p[bi] - d, cd = p[ci] - dpt;
+
+        // Находим координаты центра тяжести треугольника, как точку пересечения двух его медиан
+        Point bc_center = p[ci] + v[ai] * 0.5;
+        Point cd_center = p[ci] - cd * 0.5;
+        
+        Point median1 = dpt - bc_center, median2 = p[bi] - cd_center;
+        float xc = (bc_center.x * median2.x - cd_center.x * median1.x) / (median2.x - median1.x),
+              yc = median1.y * (xc - bc_center.x) / median1.x + bc_center.y;
+        
+        // Через уравнение окружности находим её точку пересечения с вектором,
+        // проведённым к внешней вершине, что и является точкой Ферма
+        float r = sqrt((dpt.x - xc) * (dpt.x - xc) + (dpt.y - yc) * (dpt.y - yc));
+        Point con_line = dpt - p[ai];
+        float a = (dpt.x - p[ai].x) * (dpt.x - p[ai].x) + (dpt.y - p[ai].y) * (dpt.y - p[ai].y),
+              b = 2 * con_line.x * (p[ai].x - xc) + 2 * con_line.y * (p[ai].y - yc), 
+              c = (p[ai].x - xc) * (p[ai].x - xc) + (p[ai].y - yc) * (p[ai].y - yc) - r * r;
+        float t1 = (-b + sqrt(b * b - 4 * a * c)) / (2 * a), 
+              t2 = (-b - sqrt(b * b - 4 * a * c)) / (2 * a);
+        
+        // cout << dpt.x << " " << dpt.y << endl;
+        // cout << cd.x << " " << cd.y << endl;
+        // cout << bc_center.x << " " << bc_center.y << endl;
+        // cout << cd_center.x << " " << cd_center.y << endl;
+        // cout << a << " " <<  b << " " << c << endl;
+        // cout << t1 << " " << t2 << endl;
+        if ((t1 > 1 - 1e-6 && t1 < 1 + 1e-6) || (t1 > -1e-6 && t1 < 1e-6)) {
+            stnpt.x = con_line.x * t2 + p[ai].x;
+            stnpt.y = con_line.y * t2 + p[ai].y;
+        }
+        else if ((t2 > 1 - 1e-6 && t2 < 1 + 1e-6) || (t2 > -1e-6 && t2 < 1e-6)) {
+            stnpt.x = con_line.x * t1 + p[ai].x;
+            stnpt.y = con_line.y * t1 + p[ai].y;
+        }
+
+        cout << stnpt.x << " " << stnpt.y;
+
+        float xmax = p[0].x > p[1].x ? p[0].x : p[1].x;
+        xmax = p[2].x > xmax ? p[2].x : xmax;
+        float xmin = p[0].x < p[1].x ? p[0].x : p[1].x;
+        xmin = p[2].x < xmin ? p[2].x : xmin;
+        float ymax = p[0].y > p[1].y ? p[0].y : p[1].y;
+        ymax = p[2].y > ymax ? p[2].y : ymax;
+        float ymin = p[0].y < p[1].y ? p[0].y : p[1].y;
+        ymin = p[2].y < ymin ? p[2].y : ymin;
+        lims[0] = xmin - 5, lims[1] = xmax + 5,
+        lims[2] = ymin - 5, lims[3] = ymax + 5;
+
+        scale =  max((lims[1] - lims[0]), (lims[3] - lims[2])) / 1.25;
+        cout << "\nScale = " << scale;
+
+        // -lbgi -lgdi32 -lcomdlg32 -luuid -loleaut32 -lole32
+
+        /*
+        Тесты:
+        -15 5
+        -9 -1
+         7 -1
+
+        -8 -5
+        10 1
+        -9 8
+
+        0 4
+        3 14
+        2 2
+
+        9 -6
+        -7 8
+        5 10
+        */
+
+        initwindow(X0 * 2, Y0 * 2);
+        axes(1/3.);
+        
+        // вывод точек и соединение их рёбрами
+        setcolor(LIGHTBLUE);
+        line(xcoord(p[0].x), ycoord(p[0].y), xcoord(p[1].x), ycoord(p[1].y));
+        line(xcoord(p[1].x), ycoord(p[1].y), xcoord(p[2].x), ycoord(p[2].y));
+        line(xcoord(p[2].x), ycoord(p[2].y), xcoord(p[0].x), ycoord(p[0].y));
+
+        setcolor(LIGHTRED);
+        line(xcoord(p[0].x), ycoord(p[0].y), xcoord(stnpt.x), ycoord(stnpt.y));
+        line(xcoord(p[1].x), ycoord(p[1].y), xcoord(stnpt.x), ycoord(stnpt.y));
+        line(xcoord(p[2].x), ycoord(p[2].y), xcoord(stnpt.x), ycoord(stnpt.y));
+
+        setcolor(GREEN);
+        fillellipse(xcoord(stnpt.x), ycoord(stnpt.y), 7, 7);
+        setcolor(WHITE);
+        print_point(stnpt.x, stnpt.y, 15, -10);
+         
+        fillellipse(xcoord(p[0].x), ycoord(p[0].y), 4, 4);
+        fillellipse(xcoord(p[1].x), ycoord(p[1].y), 4, 4);
+        fillellipse(xcoord(p[2].x), ycoord(p[2].y), 4, 4);
+
+        getch();
+        closegraph();
+    }
+
+    return 0;
+}
+
+
+// task112984
+#include <iostream>
+#include <string>
+using namespace std;
+
+
+struct Node {
+    int v;
+    Node *next = nullptr;
+    // int number;
+};
+
+Node *Queue(int value) {
+    Node *queue = new Node;
+    queue->v = value;
+    // queue->number = 1;
+    return queue;
+}
+
+Node *head = nullptr;
+Node *tail = nullptr;
+int len = 0;
+
+void push_back(int value) {
+    if (!tail) {
+        head = Queue(value);
+        tail = Queue(value);
+        head->next = tail;
+        return;
+    }
+    else if (len == 1) {
+        tail->v = value;
+        return;
+    }
+
+    Node *tmp = new Node;
+    tmp->v = value;
+    // tmp->number = tail->number + 1;
+    tail->next = tmp;
+    tail = tail->next;
+    // return tmp;
+} 
+
+void push_middle(int value) {
+    if (!tail) {
+        head = Queue(value);
+        tail = Queue(value);
+        head->next = tail;
+        return;
+    }
+    else if (len == 1) {
+        tail->v = value;
+        return;
+    }
+    else if (len == 2) {
+        Node *tmp = new Node;
+        tmp->v = value;
+        tmp->next = head->next;
+        head->next = tmp;
+        return;
+    }
+
+    Node *tmp = new Node;
+    tmp->v = value;
+    
+    // Node *middle = head->next;
+    // for (int i = 1; i < len / 2; i++)
+    //     middle = middle->next;
+    
+    // tmp->next = middle->next;
+    // middle->next = tmp;
+
+    Node* slow = head;
+    Node* fast = head->next;
+    while (fast != nullptr && fast->next != nullptr) {
+        slow = slow->next;
+        fast = fast->next->next;
+    }
+
+    tmp->next = slow->next;
+    slow->next = tmp;
+} 
+
+void pop() {
+    if (head == nullptr)
+        return;
+
+    if (len > 2) {
+        // cout << "!!";
+        head = head->next;
+        // head->number--;
+        // tail->number--;
+
+        // return head;
+    }
+    else if (len == 2) {
+        head->v = tail->v;
+    }
+    else {
+        head = nullptr;
+        tail = nullptr;
+        // return nullptr;
+    }
+}
+
+int main() {
+    int n;
+    cin >> n;
+
+    char action;
+    int number;
+    for (int i = 0; i < n; i++) {
+        cin >> action;
+        if (action == '+') {
+            cin >> number;
+            push_back(number);
+            len++;
+
+            // cout << "head->v = " << head->v << endl;
+        }
+        else if (action == '*') {
+            cin >> number;
+            push_middle(number);
+            len++;
+        }
+        else if (action == '-') {
+            cout << head->v << endl;
+            pop();
+            len--;
+        }
+    }
+    
+    return 0;
+}
+
+
+// task 112651
+#include <iostream>
+#include <vector>
+using namespace std;
+
+
+int main() {
+    int n;
+    cin >> n;
+
+    int path_length, a, b;
+    if (n > 1) {
+        vector<vector<int>> path_map(n, vector<int>(n));
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < n; j++) {
+                cin >> path_length;
+                if (path_length == 0)
+                    path_map[i][j] = (__INT_MAX__ >> 1);
+                else
+                    path_map[i][j] = path_length;
+            }
+        }
+
+        cin >> a >> b;
+        a -= 1;
+        b -= 1;
+
+        if (a == b) {
+            cout << 0 << endl << a << " " << b;
+        }
+        else {
+            bool active[n] = {false};
+            int min_rout, routs[n] = {0}, ranges[n] = {0};
+            for (int i = 0; i < n; i++) {
+                active[i] = true;
+                ranges[i] = path_map[a][i]; 
+                routs[i] = a;
+            }
+
+            active[a] = false;
+            routs[a] = -1;
+
+            for (int i = 0; i < n - 1; i++) {
+                int min_dist = path_map[a][b];
+                for (int j = 0; j < n; j++) {
+                    if (active[j] && ranges[j] <= min_dist) {
+                        min_dist = ranges[j];
+                        min_rout = j;
+                    }
+                }
+
+                active[min_rout] = false;
+                for (int j = 0; j < n; j++) {
+                    if (active[j] && ranges[min_rout] + path_map[min_rout][j] < ranges[j]) {
+                        ranges[j] = ranges[min_rout] + path_map[min_rout][j];
+                        routs[j] = min_rout;                        
+                    }
+                }
+
+                // for (int i = 0; i < n; i++) 
+                //     cout << a + 1 << " > " << i + 1 << " = " << ranges[i] << endl;
+
+                // cout << endl << "-- ";
+            }
+
+            int s = 0, idx = b;
+            vector<int> ans;
+            while (idx != -1) {
+                if (routs[idx] != -1)
+                    s += path_map[idx][routs[idx]];
+                // cout << ":" << ranges[idx] << endl;
+
+                // cout << idx + 1 << " ";
+                ans.push_back(idx + 1);
+                idx = routs[idx];
+            }
+
+            if (s < (__INT_MAX__ >> 1)) {
+                cout << s << endl;
+                for (int i = ans.size() - 1; i >= 0; i--) {
+                    cout << ans[i] << " ";
+                }                
+            }
+            else
+                cout << 0;
+        }
+    }
+    else {
+        cin >> path_length >> a >> b;
+        cout << 0 << endl << a << " " << b;
+    }
+    
+    return 0;
+}
+
+// task112634
+#include <iostream>
+#include <vector>
+using namespace std;
+
+
+vector<vector<bool>> multimatrix(vector<vector<bool>> a, vector<vector<bool>> b, int n) {
+    vector<vector<bool>> c(n, vector<bool>(n));
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < n; j++) {
+            c[i][j] = false;
+        }
+    }
+
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < n; j++) {
+            for (int k = 0; k < n; k++) {
+                c[i][j] = c[i][j] | (a[i][k] & b[k][j]);
+            }
+        }
+    }
+
+    return c;
+}
+
+int main() {
+    int n;
+    cin >> n;
+
+    // bool adj_matrix[n][n];
+    bool connected;
+    // int curr = 0;
+    if (n > 1) {
+        vector<vector<bool>> vertexes(n, vector<bool>(n));
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < n; j++) {
+                cin >> connected;
+                vertexes[i][j] = connected;
+                // vertexes[i][j] = (int)connected;
+                // if (connected) {
+                //     if (!vertexes[i] and i == curr) {
+                //         vertexes[i] = true;
+                //         curr++;
+                //     }
+                //     // if (!vertexes[j] and j == curr) {
+                //     //     vertexes[j] = true;
+                //     //     curr++;
+                //     // }
+                // }
+            }
+        }
+
+        // bool c = new **bool;
+        vector<vector<bool>> c = multimatrix(vertexes, vertexes, n);
+        for (int i = 0; i < n; i++) {
+            cout << endl;
+            for (int j = 0; j < n; j++) {
+                for (int k = 0; k < n; k++) {
+                    cout << c[j][k] << " ";
+                }
+
+                cout << endl;
+            }
+
+            c = multimatrix(c, vertexes, n);
+        }
+
+        vector<bool> is_approx(n);
+        for (int i = 1; i < n; i++) {
+            // for (int j = 0; j < n; j++) {
+                if (vertexes[0][i]) {
+                    is_approx[i - 1] = true;
+                    // is_approx[j] = true;
+                }
+                else {
+                    is_approx[i - 1] = false;
+                    break;
+                    // is_approx[j] = false;
+                }
+            // }
+        }
+
+        for (int i = 0; i < n; i++) {
+            if (!is_approx[i]) {
+                connected = false;
+                break;
+            }
+        }
+    }
+    else
+        cin >> connected;
+    
+    if (connected)
+        cout << "YES";
+    else
+        cout << "NO";
+
+    
+    return 0;
+}
+
+
+// task112650
+#include <iostream>
+#include <vector>
+using namespace std;
+
+
+struct connection {
+    int first;
+    int second;
+};
+
+int main() {
+    int n;
+    cin >> n;
+
+    int adj_matrix[n][n];
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < n; j++) 
+            cin >> adj_matrix[i][j];
+    }
+    
+    bool used[n] = {true};
+    int k = 1, new_vert = 0, minr = (1 << 31) - 1;
+    vector<connection> ostav;
+    connection mincon;
+    while (k < n) {
+        for (int i = 0; i < n; i++) {
+            if (!used[i])
+                continue;
+            
+            for (int j = 0; j < n; j++) {
+                if (adj_matrix[i][j] != 0 and adj_matrix[i][j] < minr and !used[j]) {
+                    minr = adj_matrix[i][j];
+                    mincon.first = i < j ? i + 1 : j + 1;
+                    mincon.second = i > j ? i + 1 : j + 1;
+                    new_vert = j;
+                }
+            }
+        }
+
+        used[new_vert] = true;
+        ostav.push_back(mincon);
+        k++;
+        minr = (1 << 31) - 1;
+    }
+
+    for (int i = 0; i < ostav.size(); i++) {
+        for (int j = 0; j < ostav.size() - i - 1; j++) {
+            if (ostav[j].first > ostav[j + 1].first or 
+                (ostav[j].first == ostav[j + 1].first and ostav[j].second > ostav[j + 1].second)) {
+                    swap(ostav[j], ostav[j + 1]);
+                }
+        }
+    }
+
+    for (int i = 0; i < ostav.size(); i++) {
+        cout << ostav[i].first << " " << ostav[i].second << endl;
+    }
+    
+    
+    return 0;
+}
+
+
